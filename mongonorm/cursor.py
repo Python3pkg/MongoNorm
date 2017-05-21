@@ -1,5 +1,6 @@
 from functools import wraps
 from pymongo.cursor import Cursor as OrigCursor
+import collections
 
 
 class Cursor(object):
@@ -25,7 +26,7 @@ class Cursor(object):
         rtn = getattr(self.o_cursor, name)
         if isinstance(rtn, dict):
             return self.collection._boxing(rtn)
-        elif callable(rtn):
+        elif isinstance(rtn, collections.Callable):
             return self.decorate_method(rtn)
         return rtn
 
@@ -35,15 +36,15 @@ class Cursor(object):
             return self.collection._boxing(rtn)
         elif isinstance(rtn, OrigCursor):
             return Cursor(self.collection, rtn)
-        elif callable(rtn):
+        elif isinstance(rtn, collections.Callable):
             return self.decorate_method(rtn)
         return rtn
 
     def __iter__(self):
         return self
 
-    def next(self):
-        rtn = self.o_cursor.next()
+    def __next__(self):
+        rtn = next(self.o_cursor)
         if isinstance(rtn, dict):
             return self.collection._boxing(rtn)
         return rtn
